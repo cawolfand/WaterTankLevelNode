@@ -1,4 +1,4 @@
-#! /usr/bin/python
+##! /usr/bin/python
 
 # Imports
 import paho.mqtt.client as mqtt
@@ -53,4 +53,67 @@ def on_message(client, userdata, msg):
         		
         
     # more callbacks, etc
+
+
+
+# Variables to hold the current and last states
+currentstate = 0
+previousstate = 0
+print("Starting")
+
+client = mqtt.Client()
+client.on_connect = on_connect
+client.on_message = on_message
+client.connect(MQTT_SERVER, 1883)
+client.loop_start()
+
+try:
+	print("Waiting for alertLevel ...")
+	
+	# Loop until PIR output is 0
+	while alertLevel == 0:
+	
+		currentstate = 0
+
+	print("    Ready")
+	
+	# Loop until users quits with CTRL-C
+	while True:
+	
+		# Read PIR 
+		if alertLevel > 0:
+		
+			print("Alert Level "+str(alertLevel))
+			print("WTL "+str(wtlevel))
+			
+			# Your IFTTT URL with event name, key and json parameters (values)
+			r = requests.post('https://maker.ifttt.com/trigger/water_tank_level/with/key/ccz6C6ycQSK3LasIY9U_gE', params={"value1":alertLevel,"value2":wtlevel,"value3":"none"})
+	
+			# Record new previous state
+			previousstate = 1
+			
+			#Wait 120 seconds before looping again
+			print("Waiting 15 minutes")
+			time.sleep(900)
+			
+		# If the PIR has returned to ready state
+		elif currentstate == 0 and previousstate == 1:
+		
+			print("Ready")
+			previousstate = 0
+
+		# Wait for 10 milliseconds
+		time.sleep(0.01)
+
+except KeyboardInterrupt:
+	print("    Quit")
+
+	# Reset GPIO settings
+	client.loop_stop()
+	client.disconnect()
+
+
+
+
+
 
